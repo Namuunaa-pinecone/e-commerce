@@ -24,16 +24,6 @@ app.get("/products", async (request, response) => {
   }
 });
 
-app.get("/products/{id}", async (request, response) => {
-  try {
-    const sqlResponse = await sql`SELECT * FROM products WHERE id={} `;
-
-    response.json({ data: sqlResponse, success: true });
-  } catch (error) {
-    response.json({ error: error , success: false});
-  }
-});
-
 // app.get("/products", (request, response) => {
 //   fs.readFile("./data/products.json", "utf-8", (readError, data) => {
 //     if (readError) {
@@ -53,43 +43,44 @@ app.get("/products/{id}", async (request, response) => {
 //   });
 // });
 
-// app.post("/product", (request, response) => {
-//   const { productName, price, image } = request.body;
+app.post("/product", (request, response) => {
+  const { productName, description, price, image } = request.body;
 
-//   fs.readFile("./data/products.json", "utf-8", (readError, data) => {
-//     if (readError) {
-//       response.json({
-//         success: false,
-//         error: error,
-//       });
-//     }
+  fs.readFile("./data/products.json", "utf-8", (readError, data) => {
+    if (readError) {
+      response.json({
+        success: false,
+        error: error,
+      });
+    }
 
-//     let dbData = data ? JSON.parse(data) : [];
+    let dbData = data ? JSON.parse(data) : [];
 
-//     const newProduct = {
-//       id: Date.now().toString(),
-//       productName: productName,
-//       price: price,
-//       image: image,
-//     };
+    const newProduct = {
+      id: Date.now().toString(),
+      productName: productName,
+      description: description,
+      price: price,
+      image: image,
+    };
 
-//     dbData.push(newProduct);
+    dbData.push(newProduct);
 
-//     fs.writeFile("./data/products.json", JSON.stringify(dbData), (error) => {
-//       if (error) {
-//         response.json({
-//           success: false,
-//           error: error,
-//         });
-//       } else {
-//         response.json({
-//           success: true,
-//           product: newProduct,
-//         });
-//       }
-//     });
-//   });
-// });
+    fs.writeFile("./data/products.json", JSON.stringify(dbData), (error) => {
+      if (error) {
+        response.json({
+          success: false,
+          error: error,
+        });
+      } else {
+        response.json({
+          success: true,
+          product: newProduct,
+        });
+      }
+    });
+  });
+});
 
 // app.post("/", (request, response) => {
 //   response.send("POST huselt");
