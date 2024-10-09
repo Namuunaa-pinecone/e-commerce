@@ -2,7 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import fs from "fs";
-import { error } from "console";
+import { neon } from "@neondatabase/serverless";
+import dotenv from "dotenv";
+dotenv.config();
 
 const port = 8080;
 const app = express();
@@ -10,70 +12,88 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get("/", (request, response) => {
-  response.send("GET huselt");
+const sql = neon(`${process.env.DATABASE_URL}`);
+
+app.get("/products", async (request, response) => {
+  try {
+    const sqlResponse = await sql`SELECT * FROM products `;
+
+    response.json({ data: sqlResponse, success: true });
+  } catch (error) {
+    response.json({ error: error , success: false});
+  }
 });
 
-app.get("/products", (request, response) => {
-  fs.readFile("./data/products.json", "utf-8", (readError, data) => {
-    if (readError) {
-      response.json({
-        success: false,
-        error: error,
-      });
-    }
+app.get("/products/{id}", async (request, response) => {
+  try {
+    const sqlResponse = await sql`SELECT * FROM products WHERE id={} `;
 
-    let dbData = data ? JSON.parse(data) : [];
-
-    response.json({
-      success: true,
-      products: dbData,
-      error: "DB data hooson",
-    });
-  });
+    response.json({ data: sqlResponse, success: true });
+  } catch (error) {
+    response.json({ error: error , success: false});
+  }
 });
 
-app.post("/product", (request, response) => {
-  const { productName, price, image } = request.body;
+// app.get("/products", (request, response) => {
+//   fs.readFile("./data/products.json", "utf-8", (readError, data) => {
+//     if (readError) {
+//       response.json({
+//         success: false,
+//         error: error,
+//       });
+//     }
 
-  fs.readFile("./data/products.json", "utf-8", (readError, data) => {
-    if (readError) {
-      response.json({
-        success: false,
-        error: error,
-      });
-    }
+//     let dbData = data ? JSON.parse(data) : [];
 
-    let dbData = data ? JSON.parse(data) : [];
+//     response.json({
+//       success: true,
+//       products: dbData,
+//       error: "DB data hooson",
+//     });
+//   });
+// });
 
-    const newProduct = {
-      id: Date.now().toString(),
-      productName: productName,
-      price: price,
-      image: image,
-    };
+// app.post("/product", (request, response) => {
+//   const { productName, price, image } = request.body;
 
-    dbData.push(newProduct);
+//   fs.readFile("./data/products.json", "utf-8", (readError, data) => {
+//     if (readError) {
+//       response.json({
+//         success: false,
+//         error: error,
+//       });
+//     }
 
-    fs.writeFile("./data/products.json", JSON.stringify(dbData), (error) => {
-      if (error) {
-        response.json({
-          success: false,
-          error: error,
-        });
-      } else {
-        response.json({
-          success: true,
-          product: newProduct,
-        });
-      }
-    });
-  });
-});
+//     let dbData = data ? JSON.parse(data) : [];
 
-app.post("/", (request, response) => {
-  response.send("POST huselt");
-});
+//     const newProduct = {
+//       id: Date.now().toString(),
+//       productName: productName,
+//       price: price,
+//       image: image,
+//     };
+
+//     dbData.push(newProduct);
+
+//     fs.writeFile("./data/products.json", JSON.stringify(dbData), (error) => {
+//       if (error) {
+//         response.json({
+//           success: false,
+//           error: error,
+//         });
+//       } else {
+//         response.json({
+//           success: true,
+//           product: newProduct,
+//         });
+//       }
+//     });
+//   });
+// });
+
+// app.post("/", (request, response) => {
+//   response.send("POST huselt");
+// });
 
 app.listen(port, () => {
   console.log(`server ajillaa http://localhost:${port}`);
